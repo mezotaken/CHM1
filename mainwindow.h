@@ -27,6 +27,10 @@ private slots:
 
     void on_isInfch_stateChanged(int arg1);
 
+    void paintGraph(int numbColumnX,int numbColumnY, int N, int numbGraph);
+
+
+
 private:
     Ui::MainWindow *ui;
 };

@@ -12,10 +12,12 @@ public:
     {
     m=0;a1=0;a3=0;
     }
+
     double count(double x,double v)
     {
         return -(a1*v+a3*v*v*v)/m;
     }
+
     QString print()
     {
      return QString("u' = (" + QString::number(a1) + "*u + " + QString::number(a3) + "*u^3)/"+ QString::number(m));
@@ -49,6 +51,11 @@ public:
         cond = 2;
         isInf = false;
         stDwn = stUp = s = xprev = vprev = end = epsBrd = epsCtrl = v2 = x = v = maxStep = x0 = u0 = h = 0;
+    }
+    double countcorrect()
+    {
+       double c1 = log(geta1()/(getm()*u0*u0)+geta3()/getm())/(2*geta1());
+       return pow(geta1()/getm(),0.5)/(pow(exp((c1+x)*2*geta1())-geta3()/getm(),0.5));
     }
     void setx0(double i_x0) {x0 = i_x0;}
     void setu0(double i_u0) {u0 = i_u0;}
@@ -128,14 +135,24 @@ public:
 
 static model md;
 
+int numbGraph = 0;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->tableWidget->setColumnCount(5);
-    ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "v"<<"h"<<"v2"<<"S");
+
+    ui->tableWidget->setColumnCount(8);
+    ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "v"<<"h"<<"v2"<<"S"<<"e"<<"u"<<"E");
+
+    this->setWindowTitle("LabWork");
+
+    ui->graph->xAxis->setLabel("x");
+    ui->graph->yAxis->setLabel("V");
+    ui->graph->setInteraction(QCP::iRangeZoom,true);
+    ui->graph->setInteraction(QCP::iRangeDrag, true); // Включаем взаимодействие перетаскивания графика
+
 }
 MainWindow::~MainWindow()
 {
@@ -143,12 +160,62 @@ MainWindow::~MainWindow()
 }
 
 
+
+void MainWindow::paintGraph(int numbColumnX, int numbColumnY, int N, int numbGraph){
+
+    QVector<double> X(N);
+    QVector<double> Y(N);
+
+    QVariant check;
+    QTableWidgetItem *itemX;
+    QTableWidgetItem *itemY;
+
+
+
+    QPen pen;
+
+
+
+    pen.setColor(Qt::GlobalColor(numbGraph+7));
+
+
+    for(int i = 0; i < N; i++){
+        itemX = ui->tableWidget->item(i,numbColumnX);
+        itemY = ui->tableWidget->item(i,numbColumnY);
+        if(itemX!=NULL && itemY!= NULL){
+            check = itemX->text();
+            X[i] = check.toDouble();
+            check = itemY->text();
+            Y[i] = check.toDouble();
+            }
+        }
+
+
+
+    ui->graph->addGraph();
+    ui->graph->graph(numbGraph)->setData(X,Y);
+    ui->graph->graph(numbGraph)->setPen(pen);
+
+    ui->graph->xAxis->setRange(X[0],X[N-1]);
+
+    double minY = Y[0], maxY = Y[0];
+    for(int i = 1; i < N; i++){
+        if(Y[i]<minY) minY = Y[i];
+        if(Y[i]>maxY) maxY = Y[i];
+    }
+
+    ui->graph->yAxis->setRange(minY, maxY);
+    ui->graph->replot();
+}
+
+
+
 void MainWindow::on_startCount_clicked()
 {
     if(md.getcond() == 2)
     {
         ui->tableWidget->clear();
-        ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "v"<<"h"<<"v2"<<"S");
+        ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "v"<<"h"<<"v2"<<"S"<<"e"<<"u"<<"E");
         md.setx0(ui->x0fd->text().toDouble());
         md.setu0(ui->u0fd->text().toDouble());
         md.seth(ui->stepfd->text().toDouble());
@@ -166,7 +233,7 @@ void MainWindow::on_startCount_clicked()
     ui->tableWidget->setRowCount(10);
     ui->countParam->setDisabled(true);
     ui->taskParam->setDisabled(true);
-    int i = 1;
+    int i = 0;
     while(md.getcond() == 0 && i<md.getmaxStep() && (md.getend()-md.getx() > md.getepsBrd() || md.getisInf() ))
     {
         if(ui->tableWidget->rowCount() == i)
@@ -195,6 +262,10 @@ void MainWindow::on_startCount_clicked()
         ui->tableWidget->setItem(i,3,tbl);
         tbl = new QTableWidgetItem(QString::number(md.gets()));
         ui->tableWidget->setItem(i,4,tbl);
+        tbl = new QTableWidgetItem(QString::number(md.gets()*16));
+        ui->tableWidget->setItem(i,5,tbl);
+        tbl = new QTableWidgetItem(QString::number(md.countcorrect()));
+        ui->tableWidget->setItem(i,6,tbl);
         ui->stepUp->setText(QString::number(md.getstUp()));
         ui->stepDwn->setText(QString::number(md.getstDown()));
         if(ctrl == -1)
@@ -211,6 +282,12 @@ void MainWindow::on_startCount_clicked()
         md.setstChzero();
         md.stop();
     }
+
+
+       paintGraph(0,1,md.getmaxStep(),numbGraph);
+       numbGraph++;
+
+
 }
 
 void MainWindow::on_stopCount_clicked()
@@ -227,6 +304,9 @@ void MainWindow::on_clear_clicked()
 {
     ui->tableWidget->clear();
     ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "v"<<"h"<<"v2"<<"S");
+    ui->tableWidget->setRowCount(0); //устанавливаем количество строк в ноль
+    ui->graph->clearGraphs();
+    numbGraph = 0;
 }
 
 void MainWindow::on_isInfch_stateChanged(int st)

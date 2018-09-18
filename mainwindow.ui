@@ -416,6 +416,16 @@
      <string>Пауза</string>
     </property>
    </widget>
+   <widget class="QCustomPlot" name="graph" native="true">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>20</y>
+      <width>571</width>
+      <height>631</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -436,6 +446,32 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>x0fd</tabstop>
+  <tabstop>u0fd</tabstop>
+  <tabstop>stepfd</tabstop>
+  <tabstop>endfd</tabstop>
+  <tabstop>isInfch</tabstop>
+  <tabstop>epsCtrlfd</tabstop>
+  <tabstop>epsBrdfd</tabstop>
+  <tabstop>maxStepfd</tabstop>
+  <tabstop>a1fd</tabstop>
+  <tabstop>a3fd</tabstop>
+  <tabstop>mfd</tabstop>
+  <tabstop>startCount</tabstop>
+  <tabstop>pauseCount</tabstop>
+  <tabstop>stopCount</tabstop>
+  <tabstop>clear</tabstop>
+  <tabstop>tableWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
