@@ -16,7 +16,8 @@ QString func::print()
 void model::set(double i_m, double i_a1,double i_a3,
              bool i_isInf, double i_x0,double i_u0,
              double i_h, double i_end, double i_epsBrd,
-             double i_epsCtrl, int i_maxStep, bool i_isStepFixed)
+             double i_epsCtrl, int i_maxStep, bool i_isStepFixed,
+             int i_usage)
 {
     m = i_m;
     a1 = i_a1;
@@ -30,6 +31,7 @@ void model::set(double i_m, double i_a1,double i_a3,
     epsCtrl = i_epsCtrl;
     maxStep = i_maxStep;
     isStepFixed = i_isStepFixed;
+    usage = i_usage;
 }
 
 void model::start()
@@ -43,6 +45,14 @@ void model::start()
     minS =  1;
     xminS = x0;
     avgS = 0;
+    maxH = 0;
+    xmaxH = x0;
+    minH = 10;
+    xminH = x0;
+    maxE = 0;
+    xmaxE = x0;
+    minE = 5;
+    xminE = x0;
 }
 
 void model::stop()
@@ -99,11 +109,10 @@ double model::countCorrect(double tx)
 
 void model::iterate()
 {
-    double tv;
     v2 = halfStepCountNext(h,x,v);
-    tv = countNext(h,x,v);
+    v1 = countNext(h,x,v);
 
-    s = (v2-tv)/15;
+    s = (v2-v1)/15;
     if(!isStepFixed)
     {
         int ctrl = ctrlLocalErr();
@@ -113,8 +122,8 @@ void model::iterate()
 
             halveStep();
             v2 = halfStepCountNext(h,x,v);
-            tv = countNext(h,x,v);
-            s = (v2-tv)/15;
+            v1 = countNext(h,x,v);
+            s = (v2-v1)/15;
             ctrl = ctrlLocalErr();
         }
          hprev = h;
@@ -124,9 +133,33 @@ void model::iterate()
     }
 
     x = x+hprev;
-    v = tv;
+    switch(usage)
+    {
+        case 0:
+        v = v1;
+        break;
+        case 1:
+        v = v2;
+        break;
+        case 2:
+        v = v1+s*16;
+        break;
+    {
+
+    }
+    }
     u = countCorrect(x);
     E = u-v;
+    if(hprev>maxH)
+    {
+        maxH = hprev;
+        xmaxH = x;
+    }
+    if(hprev<minH)
+    {
+        minH = hprev;
+        xminH = x;
+    }
     if(std::abs(s)>maxS)
     {
         maxS = std::abs(s);
@@ -136,6 +169,16 @@ void model::iterate()
     {
         minS = std::abs(s);
         xminS = x;
+    }
+    if(std::abs(E)>maxE)
+    {
+        maxE = std::abs(E);
+        xmaxE = x;
+    }
+    if(std::abs(E)<minE)
+    {
+        minE = std::abs(E);
+        xminE = x;
     }
     avgS+=std::abs(s);
 }

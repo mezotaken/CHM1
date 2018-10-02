@@ -22,6 +22,7 @@ public:
     int stDwn,stUp;         //Число удваиваний и делений шага
     double x,v;             //Текущая точка численной траектории
     double v2;              //Точка посчитанная с вдвое меньшим шагом
+    double v1;              //Точка посчитанная обычным шагом
     double u;               //Текущая точка точной траектории
     double E;               //Глобальная погрешность
     double h;               //Текущий шаг
@@ -29,15 +30,21 @@ public:
     double s, avgS;         //S оценка ЛП, Среднее |S|
     double minS,maxS;       //Макс. и Мин. |S|
     double xminS,xmaxS;     //Точки в которых |S| максимально(минимально)
+    double minH,maxH;       //Макс. и Мин. H
+    double xminH,xmaxH;     //
+    double minE,maxE;       //Макс. и Мин. E
+    double xminE,xmaxE;     //
     double end;             //Граничная точка
     double epsBrd,epsCtrl;  //Параметры контроля выхода на границу и контроля погрешности
     int maxStep;            //Максимальное число шагов
+    int usage;              //Схема использования
 
     model() {}                                    //Констуктор
     void set(double i_m, double i_a1,double i_a3, //Установить параметры
           bool i_isInf, double i_x0,double i_u0,
           double i_h, double i_end, double i_epsBrd,
-          double i_epsCtrl, int i_maxStep, bool i_isStepFixed);
+          double i_epsCtrl, int i_maxStep, bool i_isStepFixed,
+          int i_usage);
     void start();   //Начать счёт
     void stop();    //Остановить счёт
     double countNext(double th, double tx, double tv);          //Посчитать следующую точку
