@@ -21,8 +21,6 @@ private slots:
 
     void on_stopCount_clicked();
 
-    void on_pauseCount_clicked();
-
     void on_clear_clicked();
 
     void on_isInfch_stateChanged(int arg1);
